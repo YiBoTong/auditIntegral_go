@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+package go.micro.srv.systemSetup;
+
+// 字典服务
+service Dictionaries {
+    // 获取字典列表
+    rpc List (ListRequest) returns (ListResponse) {
+    }
+    // 创建字典
+    rpc Add (AddDictionaryType) returns (EditResponse) {
+    }
+    // 修改字典
+    rpc Edit (DictionaryType) returns (EditResponse) {
+    }
+    // 删除字典
+    rpc Delete (DelRequest) returns (EditResponse) {
+    }
+}
+
+// 状态结构
+message Status {
+    int32 code = 1; // 状态码
+    bool success = 2; // 是否成功
+    string msg = 3; // 信息
+}
+
+// 列表页返回页面信息
+message ResponsePage {
+    int32 size = 1; // 每页显示数量
+    int32 page = 2; // 第几页
+    int32 total = 3; // 总共多少条数据
+    int32 sumPage = 4; // 总共多少页
+}
+
+// 请求列表页需要相关信息
+message RequestPage {
+    int32 size = 1; // 每页显示数量
+    int32 page = 2; // 第几页
+}
+
+// 请求字典列表需要的参数
+message ListRequest {
+    RequestPage page = 1; // 页面信息数据
+}
+
+// 请求字典列表的参数
+message ListResponse {
+    // 页面信息
+    ResponsePage page = 1;
+    // 状态
+    Status status = 2;
+    // 字典数据(数组)
+    repeated DictionaryType data = 3;
+}
+
+// 删除字典请求参数
+message DelRequest {
+    string ids = 1; // 需要删除的id，以英文逗号分隔
+}
+
+// 字典操作结果
+message EditResponse {
+    string data = 1;
+    // 状态
+    Status status = 2;
+}
+
+// 字典类型的结构
+message DictionaryType {
+    int32 id = 1; // 字典类型id
+    int32 classId = 2; // 字典分类id
+    string title = 3; // 字典类型名称
+    string key = 4; // 字典类型
+    bool isUse = 5; // 是否启用
+    string describe = 6; // 字典类型描述
+    repeated Dictionary dictionaries = 7; // 字典
+}
+
+// 添加字典类型的结构
+message AddDictionaryType {
+    int32 classId = 2; // 字典分类id
+    string title = 3; // 字典类型名称
+    string key = 4; // 字典类型
+    bool isUse = 5; // 是否启用
+    string describe = 6; // 字典类型描述
+    repeated AddDictionary dictionaries = 7; // 字典
+}
+
+// 字典结构
+message Dictionary {
+    int32 id = 1; // 字典id
+    int32 typeId = 2; // 字典类型id
+    string key = 3; // 索引
+    string value = 4; // 值
+    int32 order = 5; // 顺序
+    string describe = 6; // 字典类型描述
+}
+
+// 添加字典结构
+message AddDictionary {
+    int32 typeId = 2; // 字典类型id
+    string key = 3; // 索引
+    string value = 4; // 值
+    int32 order = 5; // 顺序
+    string describe = 6; // 字典类型描述
+}
