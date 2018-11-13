@@ -22,8 +22,8 @@ micro new auditIntegral/systemSetup --namespace=go.micro --type=srv
 
 ## Dependencies
 
-Micro services depend on service discovery. The default is consul.
-
+Micro services depend on service discovery. The default is consul.  
+[down URL](https://www.consul.io/downloads.html)
 ```
 # install consul
 brew install consul

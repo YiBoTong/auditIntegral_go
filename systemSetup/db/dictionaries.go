@@ -17,7 +17,7 @@ func NewDictionariesExtHandler() *Dictionaries {
 }
 
 // 获取字典列表
-func (d *Dictionaries) GetDictionaryTypes(limit, Offset int32) ([]*entity.DictionaryType, error) {
+func (d *Dictionaries) GetDictionaryTypes(limit, Offset int) ([]*entity.DictionaryType, error) {
 	d.db.SetTableName("dictionary_type");
 	dictionaryTypeCondition := d.db.NewCondition()
 	// 查询排除软删除

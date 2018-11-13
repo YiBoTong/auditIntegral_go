@@ -5,10 +5,6 @@ import (
 	"auditIntegral/_public/config"
 )
 
-//var (
-//	db *gosql.DbMysql
-//)
-
 func Init() *gosql.DbMysql {
 	conf := gosql.Config{
 		Master: config.MySqlMaster,

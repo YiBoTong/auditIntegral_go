@@ -2,7 +2,6 @@ package main
 
 import (
 	"auditIntegral/_public/config"
-	"auditIntegral/_public/db"
 	"auditIntegral/_public/log"
 	"auditIntegral/systemSetup/handler"
 
@@ -28,7 +27,6 @@ func main() {
 	service.Init(
 		micro.Action(func(context *cli.Context) {
 			logger.Info("info", zap.Any(config.SystemSetupNameSpace, "service start"))
-			db.Init()
 			// Register Handler
 			example.RegisterExampleHandler(service.Server(), new(handler.Example))
 			// 字典管理
