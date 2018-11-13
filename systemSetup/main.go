@@ -1,38 +1,54 @@
 package main
 
 import (
+	"auditIntegral/_public/config"
+	"auditIntegral/_public/db"
+	"auditIntegral/_public/log"
 	"auditIntegral/systemSetup/handler"
+
 	"auditIntegral/systemSetup/subscriber"
-	"github.com/micro/go-log"
+	"github.com/micro/cli"
 	"github.com/micro/go-micro"
+	"go.uber.org/zap"
 
 	dictionaries "auditIntegral/systemSetup/proto/dictionaries"
 	example "auditIntegral/systemSetup/proto/example"
 )
 
 func main() {
+	log.Init(config.SystemSetupNameSpace)
+	logger := log.Instance()
 	// New Service
 	service := micro.NewService(
-		micro.Name("go.micro.srv.systemSetup"),
+		micro.Name("go.micro.srv."+config.SystemSetupNameSpace),
 		micro.Version("latest"),
 	)
 
 	// Initialise service
-	service.Init()
+	service.Init(
+		micro.Action(func(context *cli.Context) {
+			logger.Info("info", zap.Any(config.SystemSetupNameSpace, "service start"))
+			db.Init()
+			// Register Handler
+			example.RegisterExampleHandler(service.Server(), new(handler.Example))
+			// 字典管理
+			dictionaries.RegisterDictionariesHandler(service.Server(), new(handler.Dictionaries))
 
-	// Register Handler
-	example.RegisterExampleHandler(service.Server(), new(handler.Example))
-	// 字典管理
-	dictionaries.RegisterDictionariesHandler(service.Server(), new(handler.Dictionaries))
+			// Register Struct as Subscriber
+			micro.RegisterSubscriber("go.micro.srv."+config.SystemSetupNameSpace, service.Server(), new(subscriber.Example))
 
-	// Register Struct as Subscriber
-	micro.RegisterSubscriber("go.micro.srv.systemSetup", service.Server(), new(subscriber.Example))
-
-	// Register Function as Subscriber
-	micro.RegisterSubscriber("go.micro.srv.systemSetup", service.Server(), subscriber.Handler)
+			// Register Function as Subscriber
+			micro.RegisterSubscriber("go.micro.srv."+config.SystemSetupNameSpace, service.Server(), subscriber.Handler)
+		}),
+		micro.AfterStop(func() error {
+			logger.Info("info", zap.Any(config.SystemSetupNameSpace, "service stop"))
+			return nil
+		}),
+	)
 
 	// Run service
 	if err := service.Run(); err != nil {
-		log.Fatal(err)
+		logger.Panic(config.SystemSetupNameSpace + " service startup failure")
+		logger.Error("error", zap.Error(err))
 	}
 }

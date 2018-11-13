@@ -43,7 +43,7 @@ condition.SetFilter("Id", 3)
 condition.SetFilter("sex", 1)
 condition.SetFilterEx("age", ">", 20)
 
-// sql: select * from `user` where `Id` = 3 and `sex` = 1 and `age` > 20
+_sql
 r, e := m.SetCondition(condition).FindAll()
 
 fmt.Println("错误", e)

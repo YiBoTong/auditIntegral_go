@@ -69,19 +69,22 @@ message EditResponse {
 // 字典类型的结构
 message DictionaryType {
     int32 id = 1; // 字典类型id
-    int32 classId = 2; // 字典分类id
-    string title = 3; // 字典类型名称
-    string key = 4; // 字典类型
+    int32 typeId = 2; // 字典分类ID
+    string key = 3; // 字典分类键
+    string title = 4; // 字典类型名称
     bool isUse = 5; // 是否启用
     string describe = 6; // 字典类型描述
-    repeated Dictionary dictionaries = 7; // 字典
+    int32 userId = 7; // 创建人ID
+    string userName = 8; // 创建人姓名
+    int32 updateTime = 9; // 更新时间
+    repeated Dictionary dictionaries = 10; // 字典
 }
 
 // 添加字典类型的结构
 message AddDictionaryType {
-    int32 classId = 2; // 字典分类id
-    string title = 3; // 字典类型名称
-    string key = 4; // 字典类型
+    string title = 2; // 字典类型名称
+    int32 typeId = 3; // 字典分类ID
+    string key = 4; // 字典分类键
     bool isUse = 5; // 是否启用
     string describe = 6; // 字典类型描述
     repeated AddDictionary dictionaries = 7; // 字典
