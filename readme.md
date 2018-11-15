@@ -41,3 +41,6 @@ micro get service go.micro.srv.xxx
 ```cmd
 MICRO_API_HANDLER=rpc MICRO_API_NAMESPACE=com.ybt.ai micro api
 ```
+---
+[docker run mySql](dockerRunMySql.md)  
+[mysql master-slave synchronization](mySql%20Master-slave%20synchronization.md)
