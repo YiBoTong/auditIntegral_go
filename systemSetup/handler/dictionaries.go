@@ -9,6 +9,7 @@ import (
 	dictionaries "auditIntegral/systemSetup/proto/dictionaries"
 	"context"
 	"go.uber.org/zap"
+	"strconv"
 )
 
 type Dictionaries struct {
@@ -25,18 +26,53 @@ func NewDictionariesExtHandler() *Dictionaries {
 
 // 列表
 func (d *Dictionaries) List(ctx context.Context, req *dictionaries.ListRequest, rsp *dictionaries.ListResponse) error {
-	dictionaryTypes, err := d.db.GetDictionaryTypes(req.Page.Size, req.Page.Page*req.Page.Size)
-	if err != nil {
-		d.logger.Error("")
+	limitNum := config.LimitNum // 每页显示数量
+	offsetNum := 0              // 偏移量
+	if req.Page.Size > 0 {
+		limitNum = int(req.Page.Size)
 	}
-	d.logger.Info("res", zap.Any(config.SystemSetupNameSpace, dictionaryTypes))
+	if req.Page.Page > 0 {
+		offsetNum = (int(req.Page.Page) - 1) * limitNum
+	}
+
+	dictionaryTypeArr := []*dictionaries.DictionaryType{}
+	page, dictionaryTypes, err := d.db.GetDictionaryTypes(limitNum, offsetNum)
+	if err != nil {
+		d.logger.Error("[Dictionaries List]", zap.Error(err))
+	} else {
+		for _, v := range dictionaryTypes {
+			dictionaryTypeArr = append(dictionaryTypeArr, &dictionaries.DictionaryType{
+				Id:         int32(v.Id),
+				TypeId:     int32(v.TypeId),
+				Key:        v.Key,
+				Title:      v.Title,
+				IsUse:      v.IsUse,
+				Describe:   v.Describe,
+				UserId:     int32(v.UserId),
+				UserName:   "测试",
+				UpdateTime: v.UpdateTime,
+			})
+		}
+	}
+	error := err != nil
+	rsp.Page = &dictionaries.ResponsePage{
+		Size:  int32(page.Limit),
+		Page:  int32(page.Offset/page.Limit + 1),
+		Total: int32(page.Count),
+	}
+	rsp.Data = dictionaryTypeArr
+	rsp.Status = &dictionaries.Status{
+		Code:  0,
+		Error: error,
+		Msg:   config.GetTodoResMsg(config.ListStr, error),
+	}
 	return nil
 }
 
 // 添加
 func (d *Dictionaries) Add(ctx context.Context, req *dictionaries.AddDictionaryType, rsp *dictionaries.EditResponse) error {
 	dtId, e := d.db.AddDictionaryType(entity.AddDictionaryType{
-		TypeId:     req.TypeId,
+		TypeId:     int(req.TypeId),
 		Key:        req.Key,
 		Title:      req.Title,
 		IsUse:      req.IsUse,
@@ -46,24 +82,80 @@ func (d *Dictionaries) Add(ctx context.Context, req *dictionaries.AddDictionaryT
 	})
 	if e != nil {
 		d.logger.Error("[Dictionaries Add]", zap.Error(e))
-		return e
+	} else {
+		for _, dictionary := range req.Dictionaries {
+			_, e := d.db.AddDictionary(entity.AddDictionary{
+				TypeId:   dtId,
+				Key:      dictionary.Key,
+				Value:    dictionary.Value,
+				Order:    int(dictionary.Order),
+				Describe: dictionary.Describe,
+			})
+			if e != nil {
+				break
+			}
+		}
 	}
-	for i, dictionary := range req.Dictionaries {
-		d.logger.Info("add dictionary "+string(dtId), zap.Any("dictionaryItem"+string(i), dictionary))
+	error := e != nil
+	rsp.Data = strconv.Itoa(dtId)
+	rsp.Status = &dictionaries.Status{
+		Code:  0,
+		Error: error,
+		Msg:   config.GetTodoResMsg(config.AddStr, error),
 	}
 	return nil
 }
 
 // 修改
 func (d *Dictionaries) Edit(ctx context.Context, req *dictionaries.DictionaryType, rsp *dictionaries.EditResponse) error {
-	//log.Printf("req: %v", req)
+	dtId := int(req.Id)
+	_, e := d.db.UpdateDictionaryType(entity.DictionaryType{
+		Id:         int(req.Id),
+		TypeId:     int(req.TypeId),
+		Key:        req.Key,
+		Title:      req.Title,
+		IsUse:      req.IsUse,
+		UpdateTime: util.GetLocalNowTimeStr(),
+		UserId:     0,
+		Describe:   req.Describe,
+	})
+	// 硬删除
+	_, err := d.db.DelDictionary(dtId)
+	if e == nil && err == nil {
+		for _, dictionary := range req.Dictionaries {
+			// 重新添加
+			_, e := d.db.AddDictionary(entity.AddDictionary{
+				TypeId:   dtId,
+				Key:      dictionary.Key,
+				Value:    dictionary.Value,
+				Order:    int(dictionary.Order),
+				Describe: dictionary.Describe,
+			})
+			if e != nil {
+				break
+			}
+		}
+	} else {
+		if e != nil {
+			d.logger.Error("[Dictionaries Edit]", zap.Error(e))
+		} else {
+			d.logger.Error("[Dictionaries Edit]", zap.Error(err))
+		}
+	}
+	error := e != nil && err != nil
+	rsp.Data = strconv.Itoa(dtId)
+	rsp.Status = &dictionaries.Status{
+		Code:  0,
+		Error: error,
+		Msg:   config.GetTodoResMsg(config.ErrorStr, error),
+	}
 	return nil
 }
 
 // 删除
 func (d *Dictionaries) Delete(ctx context.Context, req *dictionaries.DelRequest, rsp *dictionaries.EditResponse) error {
 	error := false
-	_, err := d.db.DeleteDictionaryType(req.Id)
+	_, err := d.db.DeleteDictionaryType(int(req.Id))
 	if err != nil {
 		error = false
 		d.logger.Error("[Dictionaries Del]", zap.Error(err))

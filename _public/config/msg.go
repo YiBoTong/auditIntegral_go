@@ -1,6 +1,7 @@
 package config
 
 const (
+	ListStr        = "获取列表"
 	DelStr         = "删除"
 	AddStr         = "添加"
 	EditStr        = "编辑"
