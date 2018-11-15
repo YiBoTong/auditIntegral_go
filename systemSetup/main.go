@@ -19,7 +19,7 @@ func main() {
 	logger := log.Instance()
 	// New Service
 	service := micro.NewService(
-		micro.Name("go.micro.srv."+config.SystemSetupNameSpace),
+		micro.Name(config.NameSpace+config.SystemSetupNameSpace),
 		micro.Version("latest"),
 	)
 
@@ -30,13 +30,14 @@ func main() {
 			// Register Handler
 			example.RegisterExampleHandler(service.Server(), new(handler.Example))
 			// 字典管理
-			dictionaries.RegisterDictionariesHandler(service.Server(), new(handler.Dictionaries))
+			//dictionaries.RegisterDictionariesHandler(service.Server(), new(handler.Dictionaries))
+			dictionaries.RegisterDictionariesHandler(service.Server(), handler.NewDictionariesExtHandler())
 
 			// Register Struct as Subscriber
-			micro.RegisterSubscriber("go.micro.srv."+config.SystemSetupNameSpace, service.Server(), new(subscriber.Example))
+			micro.RegisterSubscriber(config.NameSpace+config.SystemSetupNameSpace, service.Server(), new(subscriber.Example))
 
 			// Register Function as Subscriber
-			micro.RegisterSubscriber("go.micro.srv."+config.SystemSetupNameSpace, service.Server(), subscriber.Handler)
+			micro.RegisterSubscriber(config.NameSpace+config.SystemSetupNameSpace, service.Server(), subscriber.Handler)
 		}),
 		micro.AfterStop(func() error {
 			logger.Info("info", zap.Any(config.SystemSetupNameSpace, "service stop"))

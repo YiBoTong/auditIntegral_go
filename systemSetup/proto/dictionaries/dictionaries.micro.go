@@ -2,7 +2,7 @@
 // source: proto/dictionaries/dictionaries.proto
 
 /*
-Package go_micro_srv_systemSetup is a generated protocol buffer package.
+Package ai is a generated protocol buffer package.
 
 It is generated from these files:
 	proto/dictionaries/dictionaries.proto
@@ -20,7 +20,7 @@ It has these top-level messages:
 	Dictionary
 	AddDictionary
 */
-package go_micro_srv_systemSetup
+package ai
 
 import proto "github.com/golang/protobuf/proto"
 import fmt "fmt"
@@ -71,7 +71,7 @@ func NewDictionariesService(name string, c client.Client) DictionariesService {
 		c = client.NewClient()
 	}
 	if len(name) == 0 {
-		name = "go.micro.srv.systemSetup"
+		name = "ai"
 	}
 	return &dictionariesService{
 		c:    c,

@@ -35,3 +35,9 @@ go.micro.srv.xxx
 ```cmd
 micro get service go.micro.srv.xxx
 ```
+## Run API
+`MICRO_API_HANDLER`sets the http handler  
+`MICRO_API_NAMESPACE`sets the service namespace
+```cmd
+MICRO_API_HANDLER=rpc MICRO_API_NAMESPACE=com.ybt.ai micro api
+```

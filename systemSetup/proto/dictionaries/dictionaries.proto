@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-package go.micro.srv.systemSetup;
+package ai;
 
 // 字典服务
 service Dictionaries {
@@ -21,7 +21,7 @@ service Dictionaries {
 // 状态结构
 message Status {
     int32 code = 1; // 状态码
-    bool success = 2; // 是否成功
+    bool error = 2; // 是否成功
     string msg = 3; // 信息
 }
 
@@ -56,7 +56,7 @@ message ListResponse {
 
 // 删除字典请求参数
 message DelRequest {
-    string ids = 1; // 需要删除的id，以英文逗号分隔
+    int32 id = 1; // 需要删除的id，以英文逗号分隔
 }
 
 // 字典操作结果
@@ -76,7 +76,7 @@ message DictionaryType {
     string describe = 6; // 字典类型描述
     int32 userId = 7; // 创建人ID
     string userName = 8; // 创建人姓名
-    int32 updateTime = 9; // 更新时间
+    string updateTime = 9; // 更新时间
     repeated Dictionary dictionaries = 10; // 字典
 }
 
@@ -93,7 +93,6 @@ message AddDictionaryType {
 // 字典结构
 message Dictionary {
     int32 id = 1; // 字典id
-    int32 typeId = 2; // 字典类型id
     string key = 3; // 索引
     string value = 4; // 值
     int32 order = 5; // 顺序
@@ -102,7 +101,6 @@ message Dictionary {
 
 // 添加字典结构
 message AddDictionary {
-    int32 typeId = 2; // 字典类型id
     string key = 3; // 索引
     string value = 4; // 值
     int32 order = 5; // 顺序
