@@ -7,6 +7,9 @@ service Dictionaries {
     // 获取字典列表
     rpc List (ListRequest) returns (ListResponse) {
     }
+    // 获取字典列表
+    rpc GetInfo (GetRequest) returns (GetResponse) {
+    }
     // 创建字典
     rpc Add (AddDictionaryType) returns (EditResponse) {
     }
@@ -55,8 +58,20 @@ message ListResponse {
 }
 
 // 删除字典请求参数
+message GetRequest {
+    int32 id = 1; // 需要获取字典的id
+}
+
+// 字典操作结果
+message GetResponse {
+    DictionaryType data = 1;
+    // 状态
+    Status status = 2;
+}
+
+// 删除字典请求参数
 message DelRequest {
-    int32 id = 1; // 需要删除的id，以英文逗号分隔
+    int32 id = 1; // 需要删除的id
 }
 
 // 字典操作结果

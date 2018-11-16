@@ -8,6 +8,7 @@ import (
 	"auditIntegral/systemSetup/entity"
 	dictionaries "auditIntegral/systemSetup/proto/dictionaries"
 	"context"
+	"errors"
 	"go.uber.org/zap"
 	"strconv"
 )
@@ -106,6 +107,54 @@ func (d *Dictionaries) Add(ctx context.Context, req *dictionaries.AddDictionaryT
 	return nil
 }
 
+// 根据id或者key获取字典
+func (d *Dictionaries) GetInfo(ctx context.Context, req *dictionaries.GetRequest, rsp *dictionaries.GetResponse) error {
+	dtId := req.Id
+	var dictionaryType *dictionaries.DictionaryType
+	//var dictionaryArr []*dictionaries.Dictionary
+	var err = errors.New("id is required")
+	if dtId != 0 {
+		var dictionaryTypeRes *entity.DictionaryType
+		dictionaryTypeRes, err = d.db.GetDictionaryTypeById(int(dtId))
+		dictionaryType = &dictionaries.DictionaryType{
+			Id:         int32(dictionaryTypeRes.Id),
+			TypeId:     int32(dictionaryTypeRes.TypeId),
+			Key:        dictionaryTypeRes.Key,
+			Title:      dictionaryTypeRes.Title,
+			IsUse:      dictionaryTypeRes.IsUse,
+			Describe:   dictionaryTypeRes.Describe,
+			UserId:     int32(dictionaryTypeRes.UserId),
+			UserName:   "--",
+			UpdateTime: dictionaryTypeRes.UpdateTime,
+		}
+	}
+	//if err == nil {
+	//	var dictionaryArrRes []*entity.Dictionary
+	//	dictionaryArrRes, err = d.db.GetDictionaryByDictionaryTypeId(int(dtId))
+	//	for _, d := range dictionaryArrRes {
+	//		dictionaryArr = append(dictionaryArr, &dictionaries.Dictionary{
+	//			Id:       int32(d.Id),
+	//			Key:      d.Key,
+	//			Value:    d.Value,
+	//			Order:    int32(d.Order),
+	//			Describe: d.Describe,
+	//		})
+	//	}
+	//	dictionaryType.Dictionaries = dictionaryArr
+	//}
+	if err != nil {
+		d.logger.Error("[Dictionaries Get]", zap.Error(err))
+	}
+	error := err != nil
+	rsp.Data = dictionaryType
+	rsp.Status = &dictionaries.Status{
+		Code:  0,
+		Error: error,
+		Msg:   config.GetTodoResMsg(config.GetStr, error),
+	}
+	return nil
+}
+
 // 修改
 func (d *Dictionaries) Edit(ctx context.Context, req *dictionaries.DictionaryType, rsp *dictionaries.EditResponse) error {
 	dtId := int(req.Id)
@@ -147,7 +196,7 @@ func (d *Dictionaries) Edit(ctx context.Context, req *dictionaries.DictionaryTyp
 	rsp.Status = &dictionaries.Status{
 		Code:  0,
 		Error: error,
-		Msg:   config.GetTodoResMsg(config.ErrorStr, error),
+		Msg:   config.GetTodoResMsg(config.EditStr, error),
 	}
 	return nil
 }

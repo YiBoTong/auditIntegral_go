@@ -2,13 +2,14 @@ package entity
 
 // 字典类型
 type DictionaryType struct {
-	Id         int    `db:"id" json:"id"`
+	Id         int    `db:"id" json:"id" field:"id"`
 	TypeId     int    `db:"type_id" json:"typeId" field:"type_id"`
 	Key        string `db:"key" json:"key" field:"key"`
 	Title      string `db:"title" json:"title" field:"title"`
 	IsUse      bool   `db:"is_use" json:"isUse" field:"is_use"`
 	UpdateTime string `db:"update_time" json:"updateTime" field:"update_time"`
 	UserId     int    `db:"user_id" json:"userId" field:"user_id"`
+	UserName   string `db:"user_name" json:"userName" field:"user_name"`
 	Describe   string `db:"describe" json:"describe" field:"describe"`
 }
 
@@ -29,7 +30,7 @@ type AddDictionaryType struct {
 
 // 字典
 type Dictionary struct {
-	Id       int    `db:"id" json:"id"`
+	Id       int    `db:"id" json:"id" field:"id"`
 	TypeId   int    `db:"type_id" json:"typeId" field:"type_id"`
 	Key      string `db:"key" json:"key" field:"key"`
 	Value    string `db:"value" json:"value" field:"value"`

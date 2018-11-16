@@ -13,6 +13,8 @@ It has these top-level messages:
 	RequestPage
 	ListRequest
 	ListResponse
+	GetRequest
+	GetResponse
 	DelRequest
 	EditResponse
 	DictionaryType
@@ -53,6 +55,8 @@ var _ server.Option
 type DictionariesService interface {
 	// 获取字典列表
 	List(ctx context.Context, in *ListRequest, opts ...client.CallOption) (*ListResponse, error)
+	// 获取字典列表
+	GetInfo(ctx context.Context, in *GetRequest, opts ...client.CallOption) (*GetResponse, error)
 	// 创建字典
 	Add(ctx context.Context, in *AddDictionaryType, opts ...client.CallOption) (*EditResponse, error)
 	// 修改字典
@@ -82,6 +86,16 @@ func NewDictionariesService(name string, c client.Client) DictionariesService {
 func (c *dictionariesService) List(ctx context.Context, in *ListRequest, opts ...client.CallOption) (*ListResponse, error) {
 	req := c.c.NewRequest(c.name, "Dictionaries.List", in)
 	out := new(ListResponse)
+	err := c.c.Call(ctx, req, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *dictionariesService) GetInfo(ctx context.Context, in *GetRequest, opts ...client.CallOption) (*GetResponse, error) {
+	req := c.c.NewRequest(c.name, "Dictionaries.GetInfo", in)
+	out := new(GetResponse)
 	err := c.c.Call(ctx, req, out, opts...)
 	if err != nil {
 		return nil, err
@@ -124,6 +138,8 @@ func (c *dictionariesService) Delete(ctx context.Context, in *DelRequest, opts .
 type DictionariesHandler interface {
 	// 获取字典列表
 	List(context.Context, *ListRequest, *ListResponse) error
+	// 获取字典列表
+	GetInfo(context.Context, *GetRequest, *GetResponse) error
 	// 创建字典
 	Add(context.Context, *AddDictionaryType, *EditResponse) error
 	// 修改字典
@@ -135,6 +151,7 @@ type DictionariesHandler interface {
 func RegisterDictionariesHandler(s server.Server, hdlr DictionariesHandler, opts ...server.HandlerOption) error {
 	type dictionaries interface {
 		List(ctx context.Context, in *ListRequest, out *ListResponse) error
+		GetInfo(ctx context.Context, in *GetRequest, out *GetResponse) error
 		Add(ctx context.Context, in *AddDictionaryType, out *EditResponse) error
 		Edit(ctx context.Context, in *DictionaryType, out *EditResponse) error
 		Delete(ctx context.Context, in *DelRequest, out *EditResponse) error
@@ -152,6 +169,10 @@ type dictionariesHandler struct {
 
 func (h *dictionariesHandler) List(ctx context.Context, in *ListRequest, out *ListResponse) error {
 	return h.DictionariesHandler.List(ctx, in, out)
+}
+
+func (h *dictionariesHandler) GetInfo(ctx context.Context, in *GetRequest, out *GetResponse) error {
+	return h.DictionariesHandler.GetInfo(ctx, in, out)
 }
 
 func (h *dictionariesHandler) Add(ctx context.Context, in *AddDictionaryType, out *EditResponse) error {

@@ -2,8 +2,10 @@ package db
 
 import (
 	"auditIntegral/_goSql"
+	"auditIntegral/_public/config"
 	"auditIntegral/_public/db"
 	"auditIntegral/systemSetup/entity"
+	"fmt"
 )
 
 type Dictionaries struct {
@@ -18,7 +20,7 @@ func NewDictionariesExtHandler() *Dictionaries {
 
 // 获取字典列表
 func (d *Dictionaries) GetDictionaryTypes(limit, Offset int) (*gosql.Pager, []*entity.DictionaryType, error) {
-	d.db.SetTableName("dictionary_type")
+	d.db.SetTableName(config.DictionaryTypeTbName)
 	dtc := d.db.NewCondition()
 	// 查询排除软删除
 	dtc.SetFilter("delete", false)
@@ -40,7 +42,7 @@ func (d *Dictionaries) GetDictionaryTypes(limit, Offset int) (*gosql.Pager, []*e
 
 // 添加字典类型
 func (d *Dictionaries) AddDictionaryType(dictionaryType entity.AddDictionaryType) (int, error) {
-	d.db.SetTableName("dictionary_type")
+	d.db.SetTableName(config.DictionaryTypeTbName)
 	id, e := d.db.Insert(dictionaryType)
 	if e != nil {
 		return 0, e
@@ -48,9 +50,24 @@ func (d *Dictionaries) AddDictionaryType(dictionaryType entity.AddDictionaryType
 	return int(id), nil
 }
 
+// 根据字典类型id获取字典
+func (d *Dictionaries) GetDictionaryTypeById(id int) (*entity.DictionaryType, error) {
+	d.db.SetTableName(config.DictionaryTypeTbName)
+	c := d.db.NewCondition()
+	c.SetFilter("id", id)
+	d.db.Select()
+	d.db.LeftJoin(config.UserTbName, config.UserTbName+".id="+config.DictionaryTypeTbName+".user_id")
+	//value, err := d.db.SetCondition(c).FindOne()
+	//value, err := d.db.QueryOne("SELECT d.*,u.`user_name` FROM `dictionary_type` AS d LEFT JOIN `users` AS u ON d.`user_id`=u.`id` WHERE d.`id`= ? LIMIT 1", id)
+	fmt.Printf("sql %v, arg:%v", d.db.LastSql.SQL, d.db.LastSql.Args)
+	var dictionaryType *entity.DictionaryType
+	//value.Scan(&dictionaryType)
+	return dictionaryType, nil
+}
+
 // 更新字典类型
 func (d *Dictionaries) UpdateDictionaryType(dictionaryType entity.DictionaryType) (int, error) {
-	d.db.SetTableName("dictionary_type")
+	d.db.SetTableName(config.DictionaryTypeTbName)
 	c := d.db.NewCondition().SetFilter("id", dictionaryType.Id)
 	id, e := d.db.SetCondition(c).Update(dictionaryType)
 	return id, e
@@ -58,7 +75,7 @@ func (d *Dictionaries) UpdateDictionaryType(dictionaryType entity.DictionaryType
 
 // 删除字典类型
 func (d *Dictionaries) DeleteDictionaryType(id int) (int, error) {
-	d.db.SetTableName("dictionary_type")
+	d.db.SetTableName(config.DictionaryTypeTbName)
 	c := d.db.NewCondition().SetFilter("id", id)
 	// 软删除
 	_, e := d.db.SetCondition(c).Update(entity.DelDictionaryType{
@@ -70,14 +87,24 @@ func (d *Dictionaries) DeleteDictionaryType(id int) (int, error) {
 
 // 添加字典
 func (d *Dictionaries) AddDictionary(dictionary entity.AddDictionary) (int, error) {
-	d.db.SetTableName("dictionary")
+	d.db.SetTableName(config.DictionaryTbName)
 	id, e := d.db.Insert(dictionary)
 	return id, e
 }
 
+// 根据字典类型id获取字典
+func (d *Dictionaries) GetDictionaryByDictionaryTypeId(dictionaryTypeId int) ([]*entity.Dictionary, error) {
+	d.db.SetTableName(config.DictionaryTypeTbName)
+	c := d.db.NewCondition().SetFilter("type_id", dictionaryTypeId)
+	value, err := d.db.SetCondition(c).Order("order").FindAll()
+	var dictionaries []*entity.Dictionary
+	value.Scan(&dictionaries)
+	return dictionaries, err
+}
+
 // 字典编辑
 func (d *Dictionaries) UpdateDictionary(dictionary entity.Dictionary) (int, error) {
-	d.db.SetTableName("dictionary")
+	d.db.SetTableName(config.DictionaryTbName)
 	c := d.db.NewCondition().SetFilter("id", dictionary.Id)
 	id, e := d.db.SetCondition(c).Update(dictionary)
 	return id, e
@@ -85,7 +112,7 @@ func (d *Dictionaries) UpdateDictionary(dictionary entity.Dictionary) (int, erro
 
 // 字典删除
 func (d *Dictionaries) DelDictionary(dictionaryTypeId int) (int, error) {
-	d.db.SetTableName("dictionary")
+	d.db.SetTableName(config.DictionaryTbName)
 	c := d.db.NewCondition().SetFilter("type_id", dictionaryTypeId)
 	id, e := d.db.SetCondition(c).Del()
 	return id, e
